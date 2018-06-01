@@ -60,16 +60,17 @@ function initLight() {
     scene.add(directionalLight);
 }
 
-var geometry;
+var cubeGeo;
 var material;
 function initObject() {
-    geometry = new THREE.CubeGeometry(0.95,0.95,0.95);
+    cubeGeo = new THREE.CubeGeometry(0.95,0.95,0.95);
     material = new THREE.MeshLambertMaterial({color: 0x00ff00, wireframe: false});
 }
 
 function render() {
     delta = clock.getDelta();
     orbitControls.update(delta);
+    stats.update();
     requestAnimationFrame(render);
     renderer.render(scene, camera);
 }
@@ -81,7 +82,7 @@ function threeStart() {
     initScene();
     initLight();
     initObject();
-
+    initStats();
 
 
     initOribitControls();
@@ -108,45 +109,35 @@ function initOribitControls() {
 
 
 var controls;
-function  initGUI() {
+function initGUI() {
     //存放有所有需要改变的属性的对象
     controls = new function () {
-        this.rotationSpeed = 5;
-        this.autoRotate = true;
-        this.start_x = 211;
-        this.start_y = 106;
-        this.start_z = 326;
-        this.end_x = 433;
-        this.end_y = 985;
-        this.end_z =666;
-        this.Algorithm = "3DDDA";
+        this.addBall = function () {
+            for(var i=0;i<100;i++){
+                var ballGeo = new THREE.SphereGeometry(10, 40, 40);
+                var ballMesh = new THREE.Mesh(ballGeo, material);
+                ballMesh.position.set(Math.random()*1000, Math.random()*1000, Math.random()*1000);
+                // ballMesh.frustumCulled = false;
+                scene.add(ballMesh);
+            }
+        }
     };
 
     //创建dat.GUI，传递并设置属性
     var gui = new dat.GUI();
-    //gui.domElement.style = 'position:absolute;top:0px;left:0px;width:180px';
-    var autoRotateController =  gui.add(controls, 'autoRotate');
-    var rotationSpeedController = gui.add(controls, 'rotationSpeed', 0, 20);
-    var f_start = gui.addFolder("Start Point");
-    f_start.add(controls, 'start_x', 0, 1000);
-    f_start.add(controls, 'start_y', 0, 1000);
-    f_start.add(controls, 'start_z', 0, 1000);
-    f_start.open();
-    var f_end = gui.addFolder("End Point");
-    f_end.add(controls, 'end_x', 0, 1000);
-    f_end.add(controls, 'end_y', 0, 1000);
-    f_end.add(controls, 'end_z', 0, 1000);
-    f_end.open();
-    gui.add(controls, "Algorithm", ["3DDDA", "3D Bresenham"]);
-    rotationSpeedController.onChange(
-        function (value) {
-            orbitControls.autoRotateSpeed = value;
-        }
-    );
-    autoRotateController.onChange(
-        function (value) {
-            orbitControls.autoRotate = value;
-        }
-    );
+    gui.add(controls, 'addBall');
+}
 
+var stats;
+function initStats(){
+    stats = new Stats();
+    //设置统计模式
+    stats.setMode(0); // 0: fps, 1: ms
+    //统计信息显示在左上角
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.left = '30px';
+    stats.domElement.style.top = '30px';
+    //将统计对象添加到对应的<div>元素中
+    document.getElementById("Stats-output").appendChild(stats.domElement);
+    return stats;
 }
