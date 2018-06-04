@@ -22,9 +22,9 @@ var camera;
 var frustum;
 function initCamera() {
     camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
-    camera.position.x = 1000;
-    camera.position.y = 1000;
-    camera.position.z = 1000;
+    camera.position.x = 800;
+    camera.position.y = 800;
+    camera.position.z = 800;
     camera.lookAt(new THREE.Vector3(0,0,0));
     frustum = new THREE.Frustum();
     var projScreenMatrix = new THREE.Matrix4();
@@ -96,6 +96,9 @@ function render() {
             }
             break;
         default:
+            for(var i=3;i<scene.children.length;i++){
+                scene.children[i].visible = true;
+            }
             break;
     }
     renderer.render(scene, camera);
@@ -165,7 +168,9 @@ function initOribitControls() {
     orbitControls = new THREE.OrbitControls(camera, renderer.domElement, renderer.domElement);
     orbitControls.target = new THREE.Vector3(0, 0, 0);//控制焦点
     orbitControls.autoRotate = true;//将自动旋转打开
-    orbitControls.autoRotateSpeed = 10;
+    orbitControls.autoRotateSpeed = 5;
+    orbitControls.minDistance = 50;
+    orbitControls.maxDistance = 3000;
     clock = new THREE.Clock();//用于更新轨道控制器
 }
 
@@ -176,6 +181,17 @@ var controls;
 function initGUI() {
     //存放有所有需要改变的属性的对象
     controls = new function () {
+        this.autoRotate = true;
+        this.focusOn = function () {
+            camera.position.x = 100;
+            camera.position.y = 100;
+            camera.position.z = 100;
+        };
+        this.notFocus = function () {
+            camera.position.x = 800;
+            camera.position.y = 800;
+            camera.position.z = 800;
+        };
         this.add = function () {
             var obj = gun.clone();
             obj.position.set(Math.random()*1000, Math.random()*1000, Math.random()*1000);
@@ -194,9 +210,16 @@ function initGUI() {
 
     //创建dat.GUI，传递并设置属性
     var gui = new dat.GUI();
+    var autoRotateController = gui.add(controls, 'autoRotate').name("自动旋转");
+    gui.add(controls, 'focusOn').name("看近景");
+    gui.add(controls, 'notFocus').name("看远景");
     gui.add(controls, 'add').name("添加物体");
     gui.add(controls, "del").name("删除物体");
     gui.add(controls, "frustum", ["NULL", "AABB", "Sphere"]).name("剔除算法");
+    
+    autoRotateController.onChange(function (value) {
+        orbitControls.autoRotate = value;
+    })
 
 }
 
